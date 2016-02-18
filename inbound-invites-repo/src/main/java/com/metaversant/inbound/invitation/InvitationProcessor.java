@@ -37,6 +37,12 @@ import org.apache.log4j.Logger;
 
 import com.metaversant.behaviors.OnEmailedNodeUpdate;
 
+/**
+ * This class is responsible for parsing calendar invitations sent as ICS files
+ * and taking corresponding action in an Alfresco Share site calendar.
+ * 
+ * @author jpotts, Metaversant
+ */
 public class InvitationProcessor {
 
 	// Dependencies
@@ -54,6 +60,16 @@ public class InvitationProcessor {
 
 	private Logger logger = Logger.getLogger(OnEmailedNodeUpdate.class);
 
+	/**
+	 * This method looks at node references that were created by the inbound
+	 * SMTP process and looks for associated attachments that are ICS files.
+	 * 
+	 * When ICS files are found they are processed to update the calendar entry
+	 * in the Share site, then the node ref and its associated attachments are
+	 * moved to another folder.
+	 * 
+	 * @param emailNodeRef The node reference of the emailed object.
+	 */
 	public void processEmail(NodeRef emailNodeRef) {
 		if (logger.isDebugEnabled()) logger.debug("Processing email");
 
@@ -119,6 +135,12 @@ public class InvitationProcessor {
 		}
 	}
 
+	/**
+	 * This method actually parses the calendar invite and then takes the
+	 * appropriate action in the calendar depending on the action.
+	 * 
+	 * @param inviteNodeRef The node reference of the ICS file.
+	 */
 	public void processCalendarInvite(NodeRef inviteNodeRef) {
 		if (logger.isDebugEnabled()) logger.debug("Processing calendar invite");
 
@@ -169,6 +191,14 @@ public class InvitationProcessor {
 
 	}
 
+	/**
+	 * Given a folder that holds calendar objects, this method finds objects
+	 * with a specified event ID.
+	 * 
+	 * @param folder Node reference of the folder holding calendar objects.
+	 * @param id     Unique identifier of the invitation.
+	 * @return Node reference for the matching event object.
+	 */
 	public NodeRef findEventForId(NodeRef folder, String id) {
 		if (logger.isDebugEnabled()) logger.debug("Finding event");
 		String queryString = "PARENT:\"workspace://SpacesStore/" + folder.getId() + "\" AND ia:outlookUID:\"" + id + "\"";
@@ -190,11 +220,23 @@ public class InvitationProcessor {
 		return nodeRef;
 	}
 
+	/**
+	 * Deletes the specified event.
+	 * 
+	 * @param event Event to be deleted.
+	 */
 	public void deleteEvent(NodeRef event) {
 		if (logger.isDebugEnabled()) logger.debug("Deleting event");
 		nodeService.deleteNode(event);
 	}
 
+	/**
+	 * If the event already exists, the event will be updated with the calendar
+	 * info provided, otherwise a new event will be created.
+	 * 
+	 * @param folder  Node reference for the folder holding the calendar objects.
+	 * @param calInfo POJO holding calendar metadata.
+	 */
 	public void createOrUpdateEvent(NodeRef folder, CalendarInfo calInfo) {
 		NodeRef existingEvent = findEventForId(folder, calInfo.getId());
 		if (existingEvent == null) {
@@ -204,6 +246,12 @@ public class InvitationProcessor {
 		}
 	}
 
+	/**
+	 * Create a new calendar object in the Alfresco Share site.
+	 * 
+	 * @param folder  Node reference for the folder holding the calendar objects.
+	 * @param calInfo POJO holding calendar metadata.
+	 */
 	public void createEvent(NodeRef folder, CalendarInfo calInfo) {
 		if (logger.isDebugEnabled()) logger.debug("Creating event");
 
@@ -222,10 +270,22 @@ public class InvitationProcessor {
 
 	}
 
+	/**
+	 * Creates a unique name for the ICS attachment.
+	 * 
+	 * @param calInfo POJO holding calendar metadata.
+	 * @return String with the unique name of the ICS attachment.
+	 */
 	public String getEventName(CalendarInfo calInfo) {
 		return "emailed-event-" + calInfo.getId() + "-" + System.currentTimeMillis() + ".ics";
 	}
 
+	/**
+	 * Builds a properties map using the data in the CalendarInfo POJO.
+	 * 
+	 * @param calInfo POJO holding calendar metadata.
+	 * @return Map of properties suitable for setting on an Alfresco node.
+	 */
 	public Map<QName, Serializable> getProperties(CalendarInfo calInfo) {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
 
@@ -241,6 +301,13 @@ public class InvitationProcessor {
         return props;
 	}
 
+	/**
+	 * Update an existing event with the information in the CalendarInfo
+	 * object.
+	 * 
+	 * @param existingEvent Node reference for the existing event.
+	 * @param calInfo       POJO holding calendar metadata.
+	 */
 	public void updateEvent(NodeRef existingEvent, CalendarInfo calInfo) {
 		if (logger.isDebugEnabled()) logger.debug("Updating event");
 		// get the current properties of the node
@@ -256,6 +323,12 @@ public class InvitationProcessor {
 		nodeService.setProperties(existingEvent, props);
 	}
 
+	/**
+	 * Gets the calendar folder for a given Share site.
+	 * 
+	 * @param siteId The short name of the Share site.
+	 * @return The node reference of the calendar folder.
+	 */
 	public NodeRef getCalendarFolder(String siteId) {
 		NodeRef calendarFolder = siteService.getContainer(siteId, CALENDAR_COMPONENT_ID);
 		if (calendarFolder == null) {
@@ -272,6 +345,15 @@ public class InvitationProcessor {
 		return calendarFolder;
 	}
 
+	/**
+	 * Parses an ICS file and turns it into a CalendarInfo object.
+	 * 
+	 * @param nodeRef Node reference containing the ICS file.
+	 * @return POJO holding calendar metadata.
+	 * @throws Exception if the calendar method is something other than
+	 *         request or cancel or if the UID for the invite cannot be
+	 *         determined.
+	 */
 	public CalendarInfo parseIcsFile(NodeRef nodeRef) throws Exception {
 		if (logger.isDebugEnabled()) logger.debug("Parsing ICS file");
 
@@ -334,7 +416,7 @@ public class InvitationProcessor {
 	/**
 	 * For a given invitation, determine its "processed" folder.
 	 *
-	 * @param emailNodeRef
+	 * @param emailNodeRef Node reference of the emailed object.
 	 * @return NodeRef representing the folder for the email and its attachments
 	 */
 	public NodeRef getProcessedFolder(NodeRef emailNodeRef) {

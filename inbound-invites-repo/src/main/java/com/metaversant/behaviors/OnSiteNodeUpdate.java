@@ -18,6 +18,12 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 
+/**
+ * This class binds to the updateNodePolicy for site folders. It is used to
+ * make sure that sites have what we need to process inbound calendar invites.
+ * 
+ * @author jpotts, Metaversant
+ */
 public class OnSiteNodeUpdate implements NodeServicePolicies.OnUpdateNodePolicy {
 	// Dependencies
 	private NodeService nodeService;

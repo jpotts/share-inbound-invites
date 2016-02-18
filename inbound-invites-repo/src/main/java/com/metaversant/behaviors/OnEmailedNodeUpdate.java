@@ -14,6 +14,12 @@ import org.apache.log4j.Logger;
 
 import com.metaversant.inbound.invitation.InvitationProcessor;
 
+/**
+ * This class binds logic to the updateNodePolicy. For objects with the emailed
+ * aspect, the behavior invokes the invitation processor.
+ * 
+ * @author jpotts, Metaversant
+ */
 public class OnEmailedNodeUpdate implements NodeServicePolicies.OnUpdateNodePolicy {
 
 	// Dependencies
