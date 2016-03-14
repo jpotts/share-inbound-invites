@@ -105,7 +105,7 @@ public class InvitationProcessor {
 			String mimeType = contentData.getMimetype();
 			if (mimeType.equals("text/calendar")) {
 				if (logger.isDebugEnabled()) logger.debug("Found text/calendar");
-				processCalendarInvite(attachment);
+				processCalendarInvite(emailNodeRef, attachment);
 			} else {
 				if (logger.isDebugEnabled()) logger.debug("Not text/calendar: " + mimeType);
 			}
@@ -141,7 +141,7 @@ public class InvitationProcessor {
 	 * 
 	 * @param inviteNodeRef The node reference of the ICS file.
 	 */
-	public void processCalendarInvite(NodeRef inviteNodeRef) {
+	public void processCalendarInvite(NodeRef emailNodeRef, NodeRef inviteNodeRef) {
 		if (logger.isDebugEnabled()) logger.debug("Processing calendar invite");
 
 		// get the site we are currently sitting in
@@ -176,7 +176,7 @@ public class InvitationProcessor {
 		if (calInfo.getAction().equals("CREATE")) {
 			// create a new calendar entry in the calendar folder if one does
 			// not exist for the same id, otherwise update
-			createOrUpdateEvent(calFolder, calInfo);
+			createOrUpdateEvent(emailNodeRef, calFolder, calInfo);
 		} else if (calInfo.getAction().equals("DELETE")) {
 			// if the action is delete
 			// find the current calendar entry and delete it if it exists
@@ -237,10 +237,10 @@ public class InvitationProcessor {
 	 * @param folder  Node reference for the folder holding the calendar objects.
 	 * @param calInfo POJO holding calendar metadata.
 	 */
-	public void createOrUpdateEvent(NodeRef folder, CalendarInfo calInfo) {
+	public void createOrUpdateEvent(NodeRef emailNodeRef, NodeRef folder, CalendarInfo calInfo) {
 		NodeRef existingEvent = findEventForId(folder, calInfo.getId());
 		if (existingEvent == null) {
-			createEvent(folder, calInfo);
+			createEvent(emailNodeRef, folder, calInfo);
 		} else {
 			updateEvent(existingEvent, calInfo);
 		}
@@ -252,7 +252,7 @@ public class InvitationProcessor {
 	 * @param folder  Node reference for the folder holding the calendar objects.
 	 * @param calInfo POJO holding calendar metadata.
 	 */
-	public void createEvent(NodeRef folder, CalendarInfo calInfo) {
+	public void createEvent(NodeRef emailNodeRef, NodeRef folder, CalendarInfo calInfo) {
 		if (logger.isDebugEnabled()) logger.debug("Creating event");
 
 		// assign name
@@ -260,7 +260,7 @@ public class InvitationProcessor {
         Map<QName, Serializable> props = getProperties(calInfo);
         props.put(ContentModel.PROP_NAME, name);
 
-        nodeService.createNode(
+        ChildAssociationRef childAssoc = nodeService.createNode(
 				folder,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
@@ -268,6 +268,14 @@ public class InvitationProcessor {
                 props
         );
 
+        // capture email props to store on the calendar entry
+        NodeRef calObj = childAssoc.getChildRef();
+        Map<QName, Serializable> emailProps = new HashMap<QName, Serializable>();
+        emailProps.put(ContentModel.PROP_SENTDATE, nodeService.getProperty(emailNodeRef, ContentModel.PROP_SENTDATE));
+        emailProps.put(ContentModel.PROP_ADDRESSEE, nodeService.getProperty(emailNodeRef, ContentModel.PROP_ADDRESSEE));
+        emailProps.put(ContentModel.PROP_ADDRESSEES, nodeService.getProperty(emailNodeRef, ContentModel.PROP_ADDRESSEES));
+        emailProps.put(ContentModel.PROP_ORIGINATOR, nodeService.getProperty(emailNodeRef, ContentModel.PROP_ORIGINATOR));
+        nodeService.addAspect(calObj, ContentModel.ASPECT_EMAILED, emailProps);
 	}
 
 	/**
