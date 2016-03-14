@@ -399,8 +399,25 @@ public class InvitationProcessor {
 	    	}
 
 	    	calInfo.setCreateDate(vevent.getCreated().getDate());
-	    	calInfo.setStartDate(vevent.getStartDate().getDate());
-	    	calInfo.setEndDate(vevent.getEndDate().getDate());
+
+	    	Date startDate = vevent.getStartDate().getDate();
+	    	Date endDate = vevent.getEndDate().getDate();
+  	
+	    	// When an all day event is being created, the end date
+	    	// needs to be adjusted by 1 day because Alfresco does not treat
+	    	// end dates for all day events as it should according to the
+	    	// iCalendar spec.
+	    	logger.debug("endDate value: " + vevent.getEndDate().toString());
+	    	if (vevent.getEndDate().toString().startsWith("DTEND;VALUE=DATE")) {
+	            java.util.Calendar cal = java.util.Calendar.getInstance();
+	            logger.debug("endDate: " + endDate);
+	            cal.setTime(endDate);
+	            cal.add(java.util.Calendar.DAY_OF_MONTH, -1);
+	            endDate = cal.getTime();
+	            logger.debug("adjusted endDate: " + endDate);
+	    	}
+	    	calInfo.setStartDate(startDate);
+	    	calInfo.setEndDate(endDate);
 
 	    	if (vevent.getDescription() != null) {
 	    		calInfo.setDescription(vevent.getDescription().getValue());
