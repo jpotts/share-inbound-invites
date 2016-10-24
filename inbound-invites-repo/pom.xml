@@ -4,7 +4,6 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.metaversant</groupId>
     <artifactId>inbound-invites-repo</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
     <packaging>amp</packaging>
 
     <name>inbound-invites-repo Repository AMP project</name>
@@ -13,7 +12,7 @@
     <parent>
         <groupId>com.metaversant</groupId>
         <artifactId>inbound-invites</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>1.1.0</version>
     </parent>
 
     <!--
