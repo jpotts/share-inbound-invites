@@ -4,10 +4,34 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.metaversant</groupId>
     <artifactId>inbound-invites-repo</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <name>inbound-invites-repo Repository AMP project</name>
+    <version>1.1.0-SNAPSHOT</version>
     <packaging>amp</packaging>
+
+    <name>inbound-invites-repo Repository AMP project</name>
     <description>Manages the lifecycle of the inbound-invites-repo Repository AMP (Alfresco Module Package)</description>
+    <url>https://github.com/jpotts/share-inbound-invites</url>
+
+    <licenses>
+      <license>
+        <name>The Apache License, Version 2.0</name>
+        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      </license>
+    </licenses>
+
+    <developers>
+      <developer>
+        <name>Jeff Potts</name>
+        <email>info@metaversant.com</email>
+        <organization>Metaversant Group, Inc.</organization>
+        <organizationUrl>http://www.metaversant.com</organizationUrl>
+      </developer>
+    </developers>
+
+    <scm>
+      <connection>scm:git:git://github.com/jpotts/share-inbound-invites.git</connection>
+      <developerConnection>scm:git:ssh://github.com:jpotts/share-inbound-invites.git</developerConnection>
+      <url>http://github.com/jpotts/share-inbound-invites/tree/master</url>
+    </scm>
 
     <parent>
         <groupId>org.alfresco.maven</groupId>
