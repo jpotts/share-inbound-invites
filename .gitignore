@@ -3,3 +3,4 @@ inbound-invites-repo/target
 .classpath
 .project
 inbound-invites-repo/.settings
+target
