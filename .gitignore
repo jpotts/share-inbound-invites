@@ -4,3 +4,4 @@ inbound-invites-repo/target
 .project
 inbound-invites-repo/.settings
 target
+.idea
