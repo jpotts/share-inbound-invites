@@ -30,8 +30,35 @@ Because this add-on leverages inbound SMTP, all normal requirements for sending 
 
 For more information on configuring Alfresco for inbound SMTP, consult the [docs](http://docs.alfresco.com).
 
-Installation
-------------
+Maven
+-----
+Add the dependencies and overlays to the POM files of your WAR projects.
+
+For the repository tier, in a project created with the all-in-one archetype, edit repo/pom.xml:
+
+    <dependencies>
+      ...
+      <dependency>
+          <groupId>com.metaversant</groupId>
+          <artifactId>inbound-invites-repo</artifactId>
+          <version>1.1.0</version>
+          <type>amp</type>
+      </dependency>
+      ...
+    </dependencies>
+
+    <overlays>
+      ...
+      <overlay>
+          <groupId>com.metaversant</groupId>
+          <artifactId>inbound-invites-repo</artifactId>
+          <type>amp</type>
+      </overlay>
+      ...
+    </overlays>
+
+Manual Installation
+-------------------
 There is one AMP associated with this add-on. It is for the "repo tier".
 
 From the root of the inbound-invites-repo directory, use `mvn install` to create the AMP. By default the POM is set to depend on Alfresco Community Edition 5.0.d, depending on which branch of this code you checkout. This has not been tested with Alfresco Enterprise Edition.
