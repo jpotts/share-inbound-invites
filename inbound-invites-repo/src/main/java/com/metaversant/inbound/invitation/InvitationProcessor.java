@@ -46,7 +46,7 @@ import com.metaversant.inbound.behaviors.OnEmailedNodeUpdate;
  */
 public class InvitationProcessor {
 
-	// Dependencies
+    // Dependencies
 	private NodeService nodeService;
 	private SiteService siteService;
 	private ContentService contentService;
@@ -57,6 +57,12 @@ public class InvitationProcessor {
 	private final String PROCESSED_FOLDER_NAME = "processed";
 	private static final String CALENDAR_COMPONENT_ID = "calendar";
 	private static final String CALENDAR_FOLDER_NAME = "calendar";
+
+    // Local Constants
+    public static final String METHOD = "METHOD";
+    public static final String CREATE = "CREATE";
+    public static final String DELETE = "DELETE";
+    public static final String VERSION = "VERSION";
 
 	private Logger logger = Logger.getLogger(OnEmailedNodeUpdate.class);
 
@@ -173,11 +179,11 @@ public class InvitationProcessor {
 		}
 
 		// if the action is create
-		if (calInfo.getAction().equals("CREATE")) {
+		if (calInfo.getAction().equals(CREATE)) {
 			// create a new calendar entry in the calendar folder if one does
 			// not exist for the same id, otherwise update
 			createOrUpdateEvent(emailNodeRef, calFolder, calInfo);
-		} else if (calInfo.getAction().equals("DELETE")) {
+		} else if (calInfo.getAction().equals(DELETE)) {
 			// if the action is delete
 			// find the current calendar entry and delete it if it exists
 			NodeRef event = findEventForId(calFolder, calInfo.getId());
@@ -373,16 +379,17 @@ public class InvitationProcessor {
 
     		CalendarBuilder builder = new CalendarBuilder();
 	    	Calendar calendar = builder.build(contentStream);
-	    	if (!calendar.getProperty("VERSION").equals(Version.VERSION_2_0)) {
+	    	if (!calendar.getProperty(VERSION).equals(Version.VERSION_2_0)) {
 	    		logger.error("ICS file version not recognized");
 	    	}
 
-	    	if (calendar.getProperty("METHOD").equals(Method.REQUEST)) {
-	    		calInfo.setAction("CREATE");
-	    	} else if(calendar.getProperty("METHOD").equals(Method.CANCEL)) {
-	    		calInfo.setAction("DELETE");
+	    	if (calendar.getProperty(METHOD).equals(Method.REQUEST) ||
+                    calendar.getProperty(METHOD).equals(Method.PUBLISH)) {
+	    		calInfo.setAction(CREATE);
+	    	} else if(calendar.getProperty(METHOD).equals(Method.CANCEL)) {
+	    		calInfo.setAction(DELETE);
 	    	} else {
-	    		throw new Exception("Unknown method: " + calendar.getProperty("METHOD").getValue());
+	    		throw new Exception("Unknown method: " + calendar.getProperty(METHOD).getValue());
 	    	}
 
 	    	VEvent vevent = (VEvent) calendar.getComponent("VEVENT");
