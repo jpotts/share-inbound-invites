@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.metaversant.inbound.common.InboundInvitesConstants;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -35,7 +36,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 
-import com.metaversant.behaviors.OnEmailedNodeUpdate;
+import com.metaversant.inbound.behaviors.OnEmailedNodeUpdate;
 
 /**
  * This class is responsible for parsing calendar invitations sent as ICS files
@@ -52,8 +53,7 @@ public class InvitationProcessor {
 	private SearchService searchService;
 	private FileFolderService fileFolderService;
 
-	// Constants
-	private final String INVITATIONS_FOLDER_NAME = "inboundInvitations";
+	// InboundInvitesConstants
 	private final String PROCESSED_FOLDER_NAME = "processed";
 	private static final String CALENDAR_COMPONENT_ID = "calendar";
 	private static final String CALENDAR_FOLDER_NAME = "calendar";
@@ -91,7 +91,7 @@ public class InvitationProcessor {
 		ChildAssociationRef childAssoc = nodeService.getPrimaryParent(emailNodeRef); // inboundInvitations
 		NodeRef parentFolder = childAssoc.getParentRef();
 		String parentFolderName = (String) nodeService.getProperty(parentFolder, ContentModel.PROP_NAME);
-		if (!parentFolderName.equals(INVITATIONS_FOLDER_NAME)) {
+		if (!parentFolderName.equals(InboundInvitesConstants.INVITATIONS_FOLDER_NAME)) {
 			if (logger.isDebugEnabled()) logger.debug("Invitation not sitting in the expected folder. Maybe it was already processed.");
 			return;
 		}

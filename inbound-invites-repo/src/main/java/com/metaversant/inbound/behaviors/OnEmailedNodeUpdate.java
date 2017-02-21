@@ -1,5 +1,6 @@
-package com.metaversant.behaviors;
+package com.metaversant.inbound.behaviors;
 
+import com.metaversant.inbound.common.InboundInvitesConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
@@ -48,12 +49,20 @@ public class OnEmailedNodeUpdate implements NodeServicePolicies.OnUpdateNodePoli
 
 	@Override
 	public void onUpdateNode(NodeRef nodeRef) {
+		if (logger.isDebugEnabled()) logger.debug("Inside update node");
+
 		// if this node does not have the "emailed" aspect then there is no work to do
 		if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_EMAILED)) {
 			return;
 		}
 
-		if (logger.isDebugEnabled()) logger.debug("Inside update node");
+		// if this node is not sitting in the inbound invites folder there is no work to do
+		// Fixes issue #5
+		NodeRef parentFolder = nodeService.getPrimaryParent(nodeRef).getParentRef();
+		String parentFolderName = (String) nodeService.getProperty(parentFolder, ContentModel.PROP_NAME);
+		if (!parentFolderName.equals(InboundInvitesConstants.INVITATIONS_FOLDER_NAME)) {
+			return;
+		}
 
 		invitationProcessor.processEmail(nodeRef);
 	}

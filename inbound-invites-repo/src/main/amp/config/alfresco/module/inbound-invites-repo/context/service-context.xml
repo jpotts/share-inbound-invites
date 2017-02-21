@@ -18,7 +18,7 @@
 -->
 <beans>
 
-  <bean id="${project.artifactId}_onEmailedNodeUpdate" class="com.metaversant.behaviors.OnEmailedNodeUpdate" init-method="init">
+  <bean id="${project.artifactId}_onEmailedNodeUpdate" class="com.metaversant.inbound.behaviors.OnEmailedNodeUpdate" init-method="init">
       <property name="nodeService">
           <ref bean="NodeService" />
       </property>
@@ -48,7 +48,7 @@
       </property>
   </bean>
 
-  <bean id="${project.artifactId}_onSiteNodeUpdate" class="com.metaversant.behaviors.OnSiteNodeUpdate" init-method="init">
+  <bean id="${project.artifactId}_onSiteNodeUpdate" class="com.metaversant.inbound.behaviors.OnSiteNodeUpdate" init-method="init">
       <property name="nodeService">
           <ref bean="NodeService" />
       </property>

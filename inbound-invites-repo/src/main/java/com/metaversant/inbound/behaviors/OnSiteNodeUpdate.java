@@ -1,9 +1,10 @@
-package com.metaversant.behaviors;
+package com.metaversant.inbound.behaviors;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.metaversant.inbound.common.InboundInvitesConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
@@ -33,8 +34,7 @@ public class OnSiteNodeUpdate implements NodeServicePolicies.OnUpdateNodePolicy 
 	// Behaviours
 	private Behaviour onUpdateNode;
 
-	// Constants
-	private final String INVITATIONS_FOLDER_NAME = "inboundInvitations";
+	// InboundInvitesConstants
 	private final String INVITATIONS_COMPONENT_ID = "inboundInvitations";
 
 	private Logger logger = Logger.getLogger(OnSiteNodeUpdate.class);
@@ -67,7 +67,7 @@ public class OnSiteNodeUpdate implements NodeServicePolicies.OnUpdateNodePolicy 
 		if (invitationsFolder == null) {
 			if (logger.isDebugEnabled()) logger.debug("Invitations folder does not exist, attempting to create");
 			Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-			props.put(ContentModel.PROP_NAME, INVITATIONS_FOLDER_NAME);
+			props.put(ContentModel.PROP_NAME, InboundInvitesConstants.INVITATIONS_FOLDER_NAME);
 			invitationsFolder = siteService.createContainer(
 					siteId,
 					INVITATIONS_COMPONENT_ID,
