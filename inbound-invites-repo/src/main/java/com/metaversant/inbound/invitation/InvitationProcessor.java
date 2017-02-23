@@ -107,13 +107,12 @@ public class InvitationProcessor {
 		for (AssociationRef assoc : attachments) {
 			if (logger.isDebugEnabled()) logger.debug("Checking email attachment");
 			NodeRef attachment = assoc.getTargetRef();
-			ContentData contentData = (ContentData) nodeService.getProperty(attachment, ContentModel.PROP_CONTENT);
-			String mimeType = contentData.getMimetype();
-			if (mimeType.equals("text/calendar")) {
-				if (logger.isDebugEnabled()) logger.debug("Found text/calendar");
+			if (isCalendarFile(attachment)) {
 				processCalendarInvite(emailNodeRef, attachment);
+                // There should only ever be one file that needs to be processed, so once that is done, bail
+				break;
 			} else {
-				if (logger.isDebugEnabled()) logger.debug("Not text/calendar: " + mimeType);
+				if (logger.isDebugEnabled()) logger.debug("Not a calendar file: " + attachment.getId());
 			}
 		}
 
@@ -141,10 +140,29 @@ public class InvitationProcessor {
 		}
 	}
 
+	private boolean isCalendarFile(NodeRef attachment) {
+		boolean isCalendarFile = false;
+		ContentData contentData = (ContentData) nodeService.getProperty(attachment, ContentModel.PROP_CONTENT);
+		String mimeType = contentData.getMimetype();
+		if (mimeType.equals("text/calendar")) {
+			if (logger.isDebugEnabled()) logger.debug("Found text/calendar: " + attachment.getId());
+			isCalendarFile = true;
+		} else if (mimeType.equals("application/octet-stream")) {
+            if (logger.isDebugEnabled()) logger.debug("Found application/octet-stream: " + attachment.getId());
+            ContentReader reader = contentService.getReader(attachment, ContentModel.PROP_CONTENT);
+			String preamble = reader.getContentString(15);
+			if (preamble.equals("BEGIN:VCALENDAR")) {
+				isCalendarFile = true;
+			}
+		}
+		return isCalendarFile;
+	}
+
 	/**
 	 * This method actually parses the calendar invite and then takes the
 	 * appropriate action in the calendar depending on the action.
-	 * 
+	 *
+     * @param emailNodeRef  Node reference of the emailed invite.
 	 * @param inviteNodeRef The node reference of the ICS file.
 	 */
 	public void processCalendarInvite(NodeRef emailNodeRef, NodeRef inviteNodeRef) {
@@ -171,6 +189,7 @@ public class InvitationProcessor {
 			calInfo = parseIcsFile(inviteNodeRef);
 		} catch (Exception e) {
 			logger.error("Caught exception while parsing ICS file: " + e.getMessage());
+			return;
 		}
 
 		if (calInfo == null) {
@@ -239,9 +258,10 @@ public class InvitationProcessor {
 	/**
 	 * If the event already exists, the event will be updated with the calendar
 	 * info provided, otherwise a new event will be created.
-	 * 
-	 * @param folder  Node reference for the folder holding the calendar objects.
-	 * @param calInfo POJO holding calendar metadata.
+	 *
+     * @param emailNodeRef Node reference of the emailed invite.
+	 * @param folder       Node reference for the folder holding the calendar objects.
+	 * @param calInfo      POJO holding calendar metadata.
 	 */
 	public void createOrUpdateEvent(NodeRef emailNodeRef, NodeRef folder, CalendarInfo calInfo) {
 		NodeRef existingEvent = findEventForId(folder, calInfo.getId());
@@ -254,9 +274,10 @@ public class InvitationProcessor {
 
 	/**
 	 * Create a new calendar object in the Alfresco Share site.
-	 * 
-	 * @param folder  Node reference for the folder holding the calendar objects.
-	 * @param calInfo POJO holding calendar metadata.
+	 *
+     * @param emailNodeRef Node reference of the emailed invite.
+	 * @param folder       Node reference for the folder holding the calendar objects.
+	 * @param calInfo      POJO holding calendar metadata.
 	 */
 	public void createEvent(NodeRef emailNodeRef, NodeRef folder, CalendarInfo calInfo) {
 		if (logger.isDebugEnabled()) logger.debug("Creating event");
@@ -377,6 +398,11 @@ public class InvitationProcessor {
     		ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
     		contentStream = reader.getContentInputStream();
 
+    		// Outlook seems to be using new line only (\n) instead of carriage
+            // returns and line feeds (\r\n). This property relaxes that
+            // requirement.
+            System.setProperty("ical4j.unfolding.relaxed", "true");
+
     		CalendarBuilder builder = new CalendarBuilder();
 	    	Calendar calendar = builder.build(contentStream);
 	    	if (!calendar.getProperty(VERSION).equals(Version.VERSION_2_0)) {
@@ -405,7 +431,9 @@ public class InvitationProcessor {
 	    		calInfo.setSummary(vevent.getSummary().getValue());
 	    	}
 
-	    	calInfo.setCreateDate(vevent.getCreated().getDate());
+	    	if (vevent.getCreated() != null) {
+                calInfo.setCreateDate(vevent.getCreated().getDate());
+            }
 
 	    	Date startDate = vevent.getStartDate().getDate();
 	    	Date endDate = vevent.getEndDate().getDate();
