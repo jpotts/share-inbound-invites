@@ -56,6 +56,11 @@ public class OnEmailedNodeUpdate implements NodeServicePolicies.OnUpdateNodePoli
 			return;
 		}
 
+		// if this node does not exist any longer then bail
+		if (!nodeService.exists(nodeRef)) {
+			return;
+		}
+
 		// if this node is not sitting in the inbound invites folder there is no work to do
 		// Fixes issue #5
 		NodeRef parentFolder = nodeService.getPrimaryParent(nodeRef).getParentRef();
