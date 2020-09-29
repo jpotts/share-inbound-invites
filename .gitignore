@@ -5,4 +5,5 @@ inbound-invites-repo/target
 inbound-invites-repo/.settings
 target
 .idea
+*.iml
 *.log
