@@ -126,3 +126,10 @@ Here are the steps:
 8. Update the event in your calendar client and the event should change in the Share site calendar.
 
 9. Delete the event in your calendar client and the event should be removed from the Share site calendar.
+
+## Signing built artifacts
+
+To build and sign artifacts before publishing to Maven Central, run:
+
+    mvn -DperformRelease=true clean install -DskipTests
+
